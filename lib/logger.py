@@ -3,7 +3,7 @@ import os
 
 filename = "./lib/myapp.txt"
 filename = os.path.dirname(__file__) + "/myapp.txt"
-print(filename)
+
 
 
 def init_log(level=logging.INFO):

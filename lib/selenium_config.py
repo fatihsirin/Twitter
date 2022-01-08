@@ -2,10 +2,6 @@ from selenium import webdriver
 import chromedriver_autoinstaller
 from selenium.webdriver.chrome.options import Options
 
-from fake_useragent import UserAgent
-
-ua = UserAgent()
-userAgent = ua.random
 
 def init_driver(headless=True, proxy=None, show_images=False, option=None):
 

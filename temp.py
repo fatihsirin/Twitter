@@ -1,9 +1,9 @@
 from lib.selenium_config import init_driver
-from twitter import log_search_page, keep_scroling
+from lib.twitter import log_search_page, keep_scroling
 
 import datetime
 from time import sleep
-from const import *
+from lib.const import *
 
 
 def scrape(since, until=None, words=None, to_account=None, from_account=None, mention_account=None, interval=5,

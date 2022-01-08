@@ -5,11 +5,11 @@ from lib.domain import Domain
 
 wl_ip = []
 wl_dom = []
-print(os.path.dirname(__file__) +'./lib/whitelist.txt')
-if os.path.exists('./lib/whitelist.txt'):
-  (wl_ip, wl_dom) = loadWhitelist('./lib/whitelist.txt')
-elif os.path.exists(os.path.dirname(__file__) +'whitelist'): #windows çalıştırmasından kaynaklı hatadan eklendi
-  (wl_ip, wl_dom) = loadWhitelist(os.path.dirname(__file__) +'whitelist.txt')
+path_whitelist = os.getcwd() + "/whitelist.txt"
+if os.path.exists(path_whitelist):
+  (wl_ip, wl_dom) = loadWhitelist(path_whitelist)
+elif os.path.exists(os.path.dirname(__file__) +'../whitelist'): #windows çalıştırmasından kaynaklı hatadan eklendi
+  (wl_ip, wl_dom) = loadWhitelist(os.path.dirname(__file__) +'../whitelist.txt')
 else:
   print('whitelist file couldnt find')
   exit()

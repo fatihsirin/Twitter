@@ -3,8 +3,7 @@
 #import lib.hashtags as hashtags
 import datetime
 import tweepy
-import dateutil
-import twitter
+from lib import twitter
 from lib.logger import init_log
 import lib.parser as parser
 logger = init_log()
@@ -56,10 +55,10 @@ def startApp(api,max_count, word='', users='',since='', until=''):
     print('[+] https://twitter.com/search?f=tweets&vertical=news&q={q}&src=typd&'.format(q=query))
     print('[+] Gathering Tweets. Please Wait...')
     #(tweets, statuscode) = getTweet(query, 'min_pos', max_count, [])
-    tweets = twitter.apiGetTweet(_api,query, 'min_pos', max_count, [])
+    tweets = twitter.apiGetTweet(_api, query, 'min_pos', max_count, [])
     print('[+] Get {num} Tweets '.format(num=str(len(tweets))))
     print('[+] Save Twitter Search Result')
-    ioc_pattaern =twitter.getIoCPattern()
+    ioc_pattaern = twitter.getIoCPattern()
     json_result = []
     for t in tweets:
         iocs = parser.extractIoC(t['text'], ioc_pattaern)
