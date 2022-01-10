@@ -140,7 +140,37 @@ def hashtags_all():
     db.insert(collection="dashboards", data=data)
 
 
-hashtags_all()
+def hashtags_Daily(days=20):
+    since = (datetime.datetime.now() - datetime.timedelta(days=days))
+    query = [
+        {
+            "$match": {
+                "hashtags": {"$not": {"$size": 0}}
+            }
+        },
+        {
+            "$match": {"date": {"$gte": since}}
+        },
+        {"$unwind": "$hashtags"},
+        {
+            "$group": {
+                "_id": {"$toLower": '$hashtags'},
+                "count": {"$sum": 1}
+            }
+        },
+
+        {"$sort": {"count": -1}},
+        {"$limit": 15},
+        {"$project": {"count": 1, "_id": 0, "id": {"$trim": {"input": "$_id", "chars": "#"}}}}
+    ]
+
+    cursor = list(db.aggregate(collection="tweets", query=query))
+    data = {"type": "hashtagsAll", "data": cursor}
+    #db.insert(collection="dashboards", data=data)
+
+
+
+hashtags_Daily()
 
 #
 # deleteDuplicatedTweets(since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
