@@ -59,14 +59,14 @@ def data_monthly():
     db.insert(collection="dashboards", data=data)
 
 
-def data_weekly():
-    since = (datetime.datetime.now() - datetime.timedelta(days=7))
-    data = {}
+def data_weekly(days=7):
+    since = (datetime.datetime.now() - datetime.timedelta(days=days))
     query = [
         {
             "$match": {"date": {"$gte": since}}
         },
-        {"$group": {"_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$date"}}, "count": {"$sum": 1}}},
+        {"$group": {"_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$date"}},
+                    "count": {"$sum": 1}}},
         {
             "$sort": {"_id": +1}
         }
@@ -74,14 +74,73 @@ def data_weekly():
 
     cursor = db.aggregate(collection="tweets", query=query)
     cursor = list(cursor)
-    for item in cursor:
-        pass
-
-    data = {"type": "monthly", "data": data}
+    data = {"type": "monthly", "data": cursor}
     db.insert(collection="dashboards", data=data)
 
 
-data_weekly()
+def iocTypeCount():
+    query = [
+        {
+            "$group": {
+                "_id": None,
+                "md5": {"$addToSet": "$md5"},
+                "sha1": {"$addToSet": "$sha1"},
+                "sha256": {"$addToSet": "$sha256"},
+                "ip": {"$addToSet": "$ip"},
+                "domain": {"$addToSet": "$domain"},
+                "url": {"$addToSet": "$url"},
+                "mail": {"$addToSet": "$mail"}
+            }
+        },
+        {
+            "$project": {
+                "_id": False,
+                "md5": {"$size": "$md5"},
+                "sha1": {"$size": "$sha1"},
+                "sha256": {"$size": "$sha256"},
+                "ip": {"$size": "$ip"},
+                "domain": {"$size": "$domain"},
+                "url": {"$size": "$url"},
+                "mail": {"$size": "$mail"}
+            }
+        }
+    ]
+
+    cursor = list(db.aggregate(collection="tweets", query=query))
+    data = {"type": "iocCounts", "data": cursor}
+    db.insert(collection="dashboards", data=data)
+
+
+def hashtags_all():
+    query = [
+        {
+            "$match": {
+                "hashtags": {"$not": {"$size": 0}}
+            }
+        },
+        {"$unwind": "$hashtags"},
+        {
+            "$group": {
+                "_id": {"$toLower": '$hashtags'},
+                "count": {"$sum": 1}
+            }
+        },
+        {
+            "$match": {
+                "count": {"$gte": 2}
+            }
+        },
+        {"$sort": {"count": -1}},
+        {"$limit": 15},
+        {"$project": {"count": 1, "_id": 0, "id": {"$trim": {"input": "$_id", "chars": "#"}}}}
+    ]
+
+    cursor = list(db.aggregate(collection="tweets", query=query))
+    data = {"type": "hashtagsAll", "data": cursor}
+    db.insert(collection="dashboards", data=data)
+
+
+hashtags_all()
 
 #
 # deleteDuplicatedTweets(since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
