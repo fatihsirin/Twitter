@@ -8,7 +8,7 @@ logger = init_log()
 db = db.MongoDB(db="Tweettioc")
 
 
-def deleteDuplicatedTweets(since, until):
+def deleteDuplicatedTweets(since=datetime.date(2000, 1, 1), until=datetime.datetime.now()):
     logger.debug('deleteDuplicatedTweets is started')
     since = datetime.datetime.strptime(since, "%Y-%m-%d")
     until = datetime.datetime.strptime(until, "%Y-%m-%d")
@@ -33,16 +33,16 @@ def deleteDuplicatedTweets(since, until):
     response = []
     for doc in cursor:
         del doc["unique_ids"][0]
-        for id in doc["unique_ids"]:
-            response.append(id)
+        for item in doc["unique_ids"]:
+            response.append(item)
 
     delete_query = {"_id": {"$in": response}}
-    # db.delete_many(collection="tweets",query=delete_query)
+    db.delete_many(collection="tweets",query=delete_query)
     logger.debug("Deleted Duplicate Tweets Count: " + str(len(response)))
     logger.debug('DeleteDuplicatedTweets is done')
 
 
-def data_monthly():
+def dashboard_monthly():
     data = {}
     query = [
         {"$group": {
@@ -55,11 +55,11 @@ def data_monthly():
     for item in cursor:
         month = datetime.date(1900, item["_id"]["month"], 1).strftime('%B')
         data[month] = item["count"]
-    data = {"type": "monthly", "data": data}
+    data = {"type": "monthly", "data": data, "date": datetime.datetime.now()}
     db.insert(collection="dashboards", data=data)
 
 
-def data_weekly(days=7):
+def dashboard_weekly(days=7):
     since = (datetime.datetime.now() - datetime.timedelta(days=days))
     query = [
         {
@@ -74,11 +74,11 @@ def data_weekly(days=7):
 
     cursor = db.aggregate(collection="tweets", query=query)
     cursor = list(cursor)
-    data = {"type": "monthly", "data": cursor}
+    data = {"type": "weekly", "data": cursor, "date": datetime.datetime.now()}
     db.insert(collection="dashboards", data=data)
 
 
-def iocTypeCount():
+def dashboard_ioc_count():
     query = [
         {
             "$group": {
@@ -107,11 +107,11 @@ def iocTypeCount():
     ]
 
     cursor = list(db.aggregate(collection="tweets", query=query))
-    data = {"type": "iocCounts", "data": cursor}
+    data = {"type": "iocCounts", "data": cursor, "date": datetime.datetime.now()}
     db.insert(collection="dashboards", data=data)
 
 
-def hashtags_all():
+def dashboard_hashtag_all():
     query = [
         {
             "$match": {
@@ -136,11 +136,11 @@ def hashtags_all():
     ]
 
     cursor = list(db.aggregate(collection="tweets", query=query))
-    data = {"type": "hashtagsAll", "data": cursor}
+    data = {"type": "hashtagsAll", "data": cursor, "date": datetime.datetime.now()}
     db.insert(collection="dashboards", data=data)
 
 
-def hashtags_Daily(days=20):
+def dashboard_hashtag_daily(days=20):
     since = (datetime.datetime.now() - datetime.timedelta(days=days))
     query = [
         {
@@ -165,12 +165,8 @@ def hashtags_Daily(days=20):
     ]
 
     cursor = list(db.aggregate(collection="tweets", query=query))
-    data = {"type": "hashtagsAll", "data": cursor}
-    #db.insert(collection="dashboards", data=data)
-
-
-
-hashtags_Daily()
+    data = {"type": "hashtagsDaily", "data": cursor, "date": datetime.datetime.now()}
+    db.insert(collection="dashboards", data=data)
 
 #
 # deleteDuplicatedTweets(since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'),

@@ -1,7 +1,8 @@
 from lib.tscrape import scrape
 from lib.const import *
 from lib.logger import init_log
-from lib.utils import deleteDuplicatedTweets
+from lib.utils import deleteDuplicatedTweets, dashboard_hashtag_all,\
+    dashboard_ioc_count,dashboard_monthly,dashboard_weekly,dashboard_hashtag_daily
 import schedule
 import time
 import datetime
@@ -62,13 +63,20 @@ def start():
                   hashtag=hashtag, interval=interval, lang=lang, headless=headless, limit=limit,
                   proxy=proxy)
     deleteDuplicatedTweets(since=since, until=until)
+    dashboard_hashtag_all()
+    dashboard_ioc_count()
+    dashboard_monthly()
+    dashboard_weekly()
+    dashboard_hashtag_daily()
+
+
     logger.info("Scraping is Done")
 
 
 start()
 # schedule.every().day.at("00:01").do(start)
 # schedule.every().minute.do(start)
-schedule.every(30).minutes.do(start())
-while True:
-    schedule.run_pending()
-    time.sleep(50)
+# schedule.every(30).minutes.do(start())
+# while True:
+#     schedule.run_pending()
+#     time.sleep(50)

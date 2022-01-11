@@ -3,10 +3,16 @@
 #import lib.hashtags as hashtags
 import datetime
 import tweepy
+import pymongo
 from lib import twitter
 from lib.logger import init_log
 import lib.parser as parser
 logger = init_log()
+
+connection = pymongo.MongoClient("mongodb://localhost:27017/")
+mydb = connection["ioctest"]
+ioc = mydb["ioc"]
+
 
 
 def tweepylogin():
@@ -65,7 +71,7 @@ def startApp(api,max_count, word='', users='',since='', until=''):
         iocs.update(t)
         #iocs['tweet'] = t
         json_result.append(iocs)
-        #ioc.insert_one(iocs)
+        ioc.insert_one(iocs)
 
     print('[+] Tweets ware saved in database')
 
@@ -100,21 +106,7 @@ def main():
             if user:
                 startApp(api=api,max_count=max_count, users=user, since=since, until=until)
         startApp(api=api,max_count=max_count, word=word, since=since, until=until)
-        logger.info('finished data gathering -'+ str(datetime.now().strftime('%Y-%m-%d')))
-        #deleteDuplicatedTweets()
-        #emptyIOCCleaner()
-        # pastebinStart()
-        #dailyexportIOC()
-        #deletefalsedomains()
-        #emptyIOCCleaner()
-        #exportIOC()
-        #dashboardData.data_iocTypes()
-        #dashboardData.data_monthly()
-        #dashboardData.data_weekly()
-        #dashboardData.data_iocDashboard()
-        #dashboardData.data_cveData()
-        #hashtags.hashtag_hunter()
-        #print('Working is done for today. See you next at 00:01 AM')
+        logger.info('finished data gathering -'+ str(datetime.datetime.now().strftime('%Y-%m-%d')))
 
 
     start()

@@ -1,9 +1,10 @@
 import logging
 import os
+import sys
 
 filename = "./lib/myapp.txt"
 filename = os.path.dirname(__file__) + "/myapp.txt"
-
+LogFormat = '%(asctime)s %(levelname)s %(message)s'
 
 
 def init_log(level=logging.INFO):
@@ -16,7 +17,7 @@ def init_log(level=logging.INFO):
         del logging.root.handlers[:]
     # set up logging to file - see previous section for more details
     logging.basicConfig(level=level,
-                        format='%(asctime)s %(levelname)s %(message)s',
+                        format=LogFormat,
                         datefmt='%Y-%m-%d %H:%M',
                         filename=filename,
                         filemode='a',
@@ -24,6 +25,13 @@ def init_log(level=logging.INFO):
                         )
 
     logger = logging.getLogger()
+
+    logFormatter = logging.Formatter(LogFormat)
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setFormatter(logFormatter)
+    logger.addHandler(ch)
+
+
     return logger
 
 

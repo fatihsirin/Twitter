@@ -131,10 +131,12 @@ class Domain(object):
         >>> d.tld
         u'co.uk'
         '''
-        logger.info('Parsing TLD for domain: %s' % self.__full_domain)
+
+        #logger.info('Parsing TLD for domain: %s' % self.__full_domain)
+
         result = None
         if len(self.__domain_parts) == 1:
-            logger.info('  Ignoring (too short)')
+            #logger.info('  Ignoring (too short)')
             return result
         tld = self.__domain_parts[-1]
         if tld in TLDS:
@@ -142,17 +144,19 @@ class Domain(object):
             for i in range(len(self.__domain_parts)):
                 _parts = self.__domain_parts[-1-i:]
                 check = '.'.join(_parts)
-                logger.info('  Checking %s' % check)
+
+                #logger.info('  Checking %s' % check)
+
                 if check in choices:
-                    logger.info('    Found match')
+                    #logger.info('    Found match')
                     # found a match, first check if it's private
                     self.__private = choices[check]
                     if self.__private:
-                        logger.info('     -Private')
+                        #logger.info('     -Private')
                         if not self.allow_private:
                             # ignore this and return the true tld
                             self.__private = False
-                            logger.info('     -Ignoring (allow_private=False)')
+                            #logger.info('     -Ignoring (allow_private=False)')
                             break
                     # valid match, store it and try for a longer match
                     result = check
@@ -163,28 +167,28 @@ class Domain(object):
                     continue
                 # check for wildcard
                 check2 = '.'.join(['*'] + _parts[1:])
-                logger.info('  Checking %s' % check2)
+                #logger.info('  Checking %s' % check2)
                 if check2 in choices:
                     # wildcard found in choices, the tested tld is valid
-                    logger.info('    Found match')
+                    #logger.info('    Found match')
                     result = check
                 if result:
                     break
         else:
             # no match, assume it's a valid TLD not present in the dat file
             # try an SOA check to make sure it exists
-            logger.info('  Not found in TLD list. Trying SOA check')
+            #logger.info('  Not found in TLD list. Trying SOA check')
             try:
                 answers = dns.resolver.query(qname = dns.name.from_text(tld),
                                              rdtype='soa')
                 assert answers
-                logger.info('    SOA record found, assuming valid')
+                #logger.info('    SOA record found, assuming valid')
                 result = tld
             except Exception as e:
                 # SOA not found
                 logging.info('    SOA record not found, assuming invalid')
                 pass
-        logger.info('  Returning effective TLD: %s' % result)
+        #logger.info('  Returning effective TLD: %s' % result)
         return result
 
     @cached_property

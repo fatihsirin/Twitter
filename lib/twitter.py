@@ -15,28 +15,25 @@ from selenium.common.exceptions import WebDriverException
 from pathlib import Path
 # logging
 from lib.logger import init_log
+
 logger = init_log()
 
-
-#db connection
+# db connection
 db = db.MongoDB(db="Tweettioc")
-
 
 from lib.regex import *
 import os
-
 
 wl_ip = []
 wl_dom = []
 path_whitelist = os.getcwd() + "/whitelist.txt"
 if os.path.exists(path_whitelist):
     (wl_ip, wl_dom) = loadWhitelist(path_whitelist)
-elif os.path.exists(os.path.dirname(__file__) +'../whitelist'): #windows çalıştırmasından kaynaklı hatadan eklendi
-    (wl_ip, wl_dom) = loadWhitelist(os.path.dirname(__file__) +'../whitelist.txt')
+elif os.path.exists(os.path.dirname(__file__) + '../whitelist'):  # windows çalıştırmasından kaynaklı hatadan eklendi
+    (wl_ip, wl_dom) = loadWhitelist(os.path.dirname(__file__) + '../whitelist.txt')
 else:
     print('whitelist file couldnt find')
     exit()
-
 
 
 def isEmptyIOC(ioc):
@@ -273,80 +270,78 @@ def log_search_page(since, until, lang, words, to_account, from_account, mention
     return path
 
 
+def apiGetTweet(tweepyapi, query, min_pos, max_count, tweets, tweet_count=0):
+    tweetslist = []
+    txt = ''
+    tweets = tweepy.Cursor(tweepyapi.search_tweets,
+                           q=query,
+                           result_type="recent", tweet_mode="extended").items(5000)
+    for tweet in tweets:
+        t = {}
+        txt = ''
+        if 'retweeted_status' in tweet._json:
+            # t['favorites'] = tweet._json['retweeted_status']['favorite_count']
+            # if 'extended_tweet' in tweet._json['retweeted_status']:
+            #   t['user'] = tweet._json['retweeted_status']['user']['screen_name']
+            #   txt = tweet._json['retweeted_status']['full_text']
+            # else:
+            #   t['user'] = tweet._json['retweeted_status']['user']['screen_name']
+            #   txt = 'RT @' + tweet._json['retweeted_status']['user']['screen_name'] + ':' + tweet._json['retweeted_status']['full_text']
+            #
+            # kisaltilmis linklerin expand edilmesi
+            # for i in tweet._json['retweeted_status']['entities']['urls']:
+            #   if i['url'] in txt:
+            #     txt = txt.replace(i['url'], i['expanded_url'])
+            pass
+        else:
+            if 'extended_tweet' in tweet._json:
+                txt = tweet._json['extended_tweet']['full_text']
+            else:
+                txt = tweet._json['full_text']
+                t['username'] = tweet._json['user']['screen_name']
+                t['name'] = tweet._json['user']['name']
 
-def apiGetTweet(tweepyapi,query, min_pos, max_count, tweets,tweet_count=0):
-  tweetslist = []
-  txt=''
-  tweets = tweepy.Cursor(tweepyapi.search_tweets,
-                         q=query,
-                         result_type="recent", tweet_mode="extended").items(5000)
-  for tweet in tweets:
-    t = {}
-    txt =''
-    if 'retweeted_status' in tweet._json:
-      # t['favorites'] = tweet._json['retweeted_status']['favorite_count']
-      # if 'extended_tweet' in tweet._json['retweeted_status']:
-      #   t['user'] = tweet._json['retweeted_status']['user']['screen_name']
-      #   txt = tweet._json['retweeted_status']['full_text']
-      # else:
-      #   t['user'] = tweet._json['retweeted_status']['user']['screen_name']
-      #   txt = 'RT @' + tweet._json['retweeted_status']['user']['screen_name'] + ':' + tweet._json['retweeted_status']['full_text']
-      #
-      # kisaltilmis linklerin expand edilmesi
-      # for i in tweet._json['retweeted_status']['entities']['urls']:
-      #   if i['url'] in txt:
-      #     txt = txt.replace(i['url'], i['expanded_url'])
-      pass
-    else:
-      if 'extended_tweet' in tweet._json:
-        txt = tweet._json['extended_tweet']['full_text']
-      else:
-        txt = tweet._json['full_text']
-        t['username'] = tweet._json['user']['screen_name']
-        t['name'] = tweet._json['user']['name']
+                # kisaltilmis linklerin expand edilmesi
+                if len(tweet._json['entities']['urls']) != 0:
+                    for i in tweet._json['entities']['urls']:
+                        if i['url'] in txt:
+                            txt = txt.replace(i['url'], i['expanded_url'])
 
-        # kisaltilmis linklerin expand edilmesi
-        if len(tweet._json['entities']['urls']) != 0:
-          for i in tweet._json['entities']['urls']:
-            if i['url'] in txt:
-              txt = txt.replace(i['url'], i['expanded_url'])
+                if 'extended_entities' in tweet._json:
+                    if len(tweet._json['extended_entities']['media']) != 0:
+                        for i in tweet._json['extended_entities']['media']:
+                            if i['url'] in txt:
+                                txt = txt.replace(i['url'], i['expanded_url'])
 
-        if 'extended_entities' in tweet._json:
-          if len(tweet._json['extended_entities']['media']) != 0:
-            for i in tweet._json['extended_entities']['media']:
-              if i['url'] in txt:
-                txt = txt.replace(i['url'], i['expanded_url'])
+            txt = txt.replace('# ', '#')
+            txt = txt.replace('@ ', '@')
+            txt = txt.replace('].', '] .')
+            txt = txt.replace(',', '.')
+            txt = txt.replace('[dot]', '.')
+            txt = txt.replace(' dot ', '.')
+            txt = txt.replace(']', '')
+            txt = txt.replace('[', '')
+            # txt = txt.replace('=', '= ')
+            txt = txt.replace(' com ', 'com ')
+            txt = txt.replace('https://', ' https://')
+            txt = txt.replace('http://', ' http://')
+            txt = txt.replace(' net', 'net')
+            txt = txt.replace('pic.twitter.com', ' pic.twitter.com')
+            txt = txt.replace('..', '.')
 
-      txt = txt.replace('# ', '#')
-      txt = txt.replace('@ ', '@')
-      txt = txt.replace('].', '] .')
-      txt = txt.replace(',', '.')
-      txt = txt.replace('[dot]', '.')
-      txt = txt.replace(' dot ', '.')
-      txt = txt.replace(']', '')
-      txt = txt.replace('[', '')
-      #txt = txt.replace('=', '= ')
-      txt = txt.replace(' com ', 'com ')
-      txt = txt.replace('https://', ' https://')
-      txt = txt.replace('http://', ' http://')
-      txt = txt.replace(' net', 'net')
-      txt = txt.replace('pic.twitter.com', ' pic.twitter.com')
-      txt = txt.replace('..', '.')
+            t['text'] = txt
+            t['tweet_id'] = tweet._json['id_str']
+            # t['retweets'] = tweet._json['retweet_count']
+            t['link'] = 'https://twitter.com/' + t['username'] + '/status/' + t['tweet_id']
+            t['mentions'] = re.compile('(@\\w+)').findall(t['text'])
+            t['hashtags'] = re.compile('(#\\w+)').findall(t['text'])
+            t['date'] = str(tweet.created_at)
+            t['date'] = t['date'][:19]
+            t['postdate'] = t['date'][:19]
+            _date = datetime.datetime.strptime(t['date'], '%Y-%m-%d %H:%M:%S')
+            # _date = datetime.datetime.strptime(t['date'], "%Y-%m-%d %H:%M:%S+%z")
+            t['timestamp'] = int(datetime.datetime.timestamp(_date))
+            t['date'] = datetime.datetime.fromtimestamp(t['timestamp'])
 
-      t['text'] = txt
-      t['tweet_id'] = tweet._json['id_str']
-      #t['retweets'] = tweet._json['retweet_count']
-      t['link'] = 'https://twitter.com/' + t['username'] + '/status/' + t['tweet_id']
-      t['mentions'] = re.compile('(@\\w+)').findall(t['text'])
-      t['hashtags'] = re.compile('(#\\w+)').findall(t['text'])
-      t['date'] = str(tweet.created_at)
-      t['date'] = t['date'][:19]
-      t['postdate'] = t['date'][:19]
-      _date = datetime.datetime.strptime(t['date'], '%Y-%m-%d %H:%M:%S')
-      #_date = datetime.datetime.strptime(t['date'], "%Y-%m-%d %H:%M:%S+%z")
-      t['timestamp'] =int(datetime.datetime.timestamp(_date))
-      t['date'] = datetime.datetime.fromtimestamp(t['timestamp'])
-
-      tweetslist.append(t)
-  return tweetslist
-
+            tweetslist.append(t)
+    return tweetslist
