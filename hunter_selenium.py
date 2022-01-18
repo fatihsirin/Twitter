@@ -2,7 +2,7 @@ from lib.tscrape import scrape
 from lib.const import *
 from lib.logger import init_log
 from lib.utils import deleteDuplicatedTweets, dashboard_hashtag_all,\
-    dashboard_ioc_count,dashboard_monthly,dashboard_weekly,dashboard_hashtag_daily
+    dashboard_ioc_count,dashboard_monthly,dashboard_daily,dashboard_hashtag_daily
 import schedule
 import time
 import datetime
@@ -66,7 +66,7 @@ def start():
     dashboard_hashtag_all()
     dashboard_ioc_count()
     dashboard_monthly()
-    dashboard_weekly()
+    dashboard_daily()
     dashboard_hashtag_daily()
 
 

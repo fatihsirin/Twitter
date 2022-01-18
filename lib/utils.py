@@ -37,29 +37,56 @@ def deleteDuplicatedTweets(since=datetime.date(2000, 1, 1), until=datetime.datet
             response.append(item)
 
     delete_query = {"_id": {"$in": response}}
-    db.delete_many(collection="tweets",query=delete_query)
+    db.delete_many(collection="tweets", query=delete_query)
     logger.debug("Deleted Duplicate Tweets Count: " + str(len(response)))
     logger.debug('DeleteDuplicatedTweets is done')
 
+
+# def dashboard_monthly():
+#     data = {}
+#     query = [
+#         {"$group": {
+#             "_id": {"month": {"$month": {"$toDate": "$date"}}},
+#             "count": {"$sum": 1}
+#         }
+#         }, {"$sort": {"_id.month": 1}}
+#     ]
+#     cursor = db.aggregate(collection="tweets", query=query)
+#     for item in cursor:
+#         month = datetime.date(1900, item["_id"]["month"], 1).strftime('%B')
+#         data[month] = item["count"]
+#     data = {"type": "monthly", "data": data, "date": datetime.datetime.now()}
+#     db.insert(collection="dashboards", data=data)
 
 def dashboard_monthly():
     data = {}
     query = [
         {"$group": {
-            "_id": {"month": {"$month": {"$toDate": "$date"}}},
+            "_id": {"month": {"$month": {"$toDate": "$date"}},
+                    "year" : {"$year" : {"$toDate": "$date"}}
+                    },
             "count": {"$sum": 1}
         }
-        }, {"$sort": {"_id.month": 1}}
+        },
+        {
+            "$sort":{
+                 "_id.year":-1,"_id.month":-1
+            }
+        },
+        {"$project": {
+            "name": "$_id",
+            "count": 1,
+            "_id":0 }
+        },
     ]
     cursor = db.aggregate(collection="tweets", query=query)
-    for item in cursor:
-        month = datetime.date(1900, item["_id"]["month"], 1).strftime('%B')
-        data[month] = item["count"]
+    data = list(cursor)
     data = {"type": "monthly", "data": data, "date": datetime.datetime.now()}
     db.insert(collection="dashboards", data=data)
 
 
-def dashboard_weekly(days=7):
+
+def dashboard_daily(days=30):
     since = (datetime.datetime.now() - datetime.timedelta(days=days))
     query = [
         {
@@ -67,6 +94,11 @@ def dashboard_weekly(days=7):
         },
         {"$group": {"_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$date"}},
                     "count": {"$sum": 1}}},
+
+        {"$project": {
+            "name": "$_id",
+            "count": 1, }
+        },
         {
             "$sort": {"_id": +1}
         }
@@ -74,7 +106,7 @@ def dashboard_weekly(days=7):
 
     cursor = db.aggregate(collection="tweets", query=query)
     cursor = list(cursor)
-    data = {"type": "weekly", "data": cursor, "date": datetime.datetime.now()}
+    data = {"type": "daily", "data": cursor, "date": datetime.datetime.now()}
     db.insert(collection="dashboards", data=data)
 
 
@@ -171,3 +203,5 @@ def dashboard_hashtag_daily(days=20):
 #
 # deleteDuplicatedTweets(since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
 #                        until = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime('%Y-%m-%d'))
+
+dashboard_monthly()
