@@ -200,8 +200,36 @@ def dashboard_hashtag_daily(days=20):
     data = {"type": "hashtagsDaily", "data": cursor, "date": datetime.datetime.now()}
     db.insert(collection="dashboards", data=data)
 
+
+def dashboard_ioctype_daily(days=30):
+    since = (datetime.datetime.now() - datetime.timedelta(days=days))
+    names = ['md5', 'sha1', 'sha256', 'ip', 'domain', 'url', 'mail']
+    for name in names:
+        query = [
+            {
+                "$match": {name: {"$regex": ".+"}},
+            },
+            {
+                "$match": {"date": {"$gte": since}}
+            },
+            {"$group": {"_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$date"}},
+                        "count": {"$sum": 1}}},
+
+            {"$project": {
+                "name": "$_id",
+                "count": 1, }
+            },
+            {
+                "$sort": {"_id": +1}
+            }
+        ]
+
+        cursor = list(db.aggregate(collection="tweets", query=query))
+        data = {"type": name, "data": cursor, "date": datetime.datetime.now()}
+        db.insert(collection="dashboards", data=data)
+
 #
 # deleteDuplicatedTweets(since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
 #                        until = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime('%Y-%m-%d'))
 
-dashboard_monthly()
+

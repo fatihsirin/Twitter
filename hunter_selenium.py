@@ -2,7 +2,7 @@ from lib.tscrape import scrape
 from lib.const import *
 from lib.logger import init_log
 from lib.utils import deleteDuplicatedTweets, dashboard_hashtag_all,\
-    dashboard_ioc_count,dashboard_monthly,dashboard_daily,dashboard_hashtag_daily
+    dashboard_ioc_count,dashboard_monthly,dashboard_daily,dashboard_hashtag_daily,dashboard_ioctype_daily
 import schedule
 import time
 import datetime
@@ -55,7 +55,7 @@ from_account = getUserList()
 
 def start():
     #1 day before and 2 days after
-    since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+    since = (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
     until = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime('%Y-%m-%d')
     logger.info("Scraping is Started")
     data = scrape(since=since, until=until, words=words, to_account=to_account, from_account=from_account,
@@ -63,12 +63,12 @@ def start():
                   hashtag=hashtag, interval=interval, lang=lang, headless=headless, limit=limit,
                   proxy=proxy)
     deleteDuplicatedTweets(since=since, until=until)
-    dashboard_hashtag_all()
     dashboard_ioc_count()
     dashboard_monthly()
     dashboard_daily()
     dashboard_hashtag_daily()
-
+    dashboard_hashtag_all()
+    dashboard_ioctype_daily()
 
     logger.info("Scraping is Done")
 

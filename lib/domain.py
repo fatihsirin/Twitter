@@ -186,7 +186,7 @@ class Domain(object):
                 result = tld
             except Exception as e:
                 # SOA not found
-                logging.info('    SOA record not found, assuming invalid')
+                #logging.info('    SOA record not found, assuming invalid')
                 pass
         #logger.info('  Returning effective TLD: %s' % result)
         return result
