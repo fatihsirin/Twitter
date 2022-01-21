@@ -63,27 +63,26 @@ def dashboard_monthly():
     query = [
         {"$group": {
             "_id": {"month": {"$month": {"$toDate": "$date"}},
-                    "year" : {"$year" : {"$toDate": "$date"}}
+                    "year": {"$year": {"$toDate": "$date"}}
                     },
             "count": {"$sum": 1}
         }
         },
         {
-            "$sort":{
-                 "_id.year":-1,"_id.month":-1
+            "$sort": {
+                "_id.year": -1, "_id.month": -1
             }
         },
         {"$project": {
             "name": "$_id",
             "count": 1,
-            "_id":0 }
+            "_id": 0}
         },
     ]
     cursor = db.aggregate(collection="tweets", query=query)
     data = list(cursor)
     data = {"type": "monthly", "data": data, "date": datetime.datetime.now()}
     db.insert(collection="dashboards", data=data)
-
 
 
 def dashboard_daily(days=30):
@@ -224,12 +223,20 @@ def dashboard_ioctype_daily(days=30):
             }
         ]
 
+        query_totalcount = [
+            {
+                "$match": {name: {"$regex": ".+"}},
+            },
+            {"$unwind": "$"+name},
+            {"$group": {"_id": 0, "count": {"$sum": 1}}}
+        ]
+
         cursor = list(db.aggregate(collection="tweets", query=query))
-        data = {"type": name, "data": cursor, "date": datetime.datetime.now()}
+        totalcount = list(db.aggregate(collection="tweets", query=query_totalcount))
+        totalcount = totalcount[0]["count"]
+        data = {"type": name, "data": cursor, "totalcount":totalcount, "date": datetime.datetime.now()}
         db.insert(collection="dashboards", data=data)
 
 #
 # deleteDuplicatedTweets(since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
 #                        until = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime('%Y-%m-%d'))
-
-

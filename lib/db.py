@@ -40,3 +40,7 @@ class MongoDB(object):
     def delete_many(collection, query):
         return MongoDB.DATABASE[collection].delete_many(query)
 
+    @staticmethod
+    def distinct(collection, query):
+        return MongoDB.DATABASE[collection].distinct(query)
+
