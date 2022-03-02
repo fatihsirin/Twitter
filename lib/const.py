@@ -1,7 +1,6 @@
 import dotenv
 import os
 from pathlib import Path
-
 current_dir = Path(__file__).parent.absolute()
 env = current_dir.joinpath(".env")
 

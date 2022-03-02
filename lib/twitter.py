@@ -251,10 +251,6 @@ def log_search_page(since, until, lang, words, to_account, from_account, mention
     else:
         words = ""
 
-    if lang is not None:
-        lang = 'lang%3A' + lang
-    else:
-        lang = ""
 
     until = "until%3A" + until + "%20"
     since = "since%3A" + since + "%20"
@@ -262,10 +258,10 @@ def log_search_page(since, until, lang, words, to_account, from_account, mention
     # latest tweets
     display_type = "&f=live"
 
-    path = 'https://twitter.com/search?q={0}{1}{2}{3}{4}{5}{6}{7}&src=typed_query{8}'.format(words, from_account,
+    path = 'https://twitter.com/search?q={0}{1}{2}{3}{4}{5}{6}&src=typed_query{7}'.format(words, from_account,
                                                                                              to_account,
                                                                                              mention_account, hash_tags,
-                                                                                             until, since, lang,
+                                                                                             until, since,
                                                                                              display_type)
     return path
 

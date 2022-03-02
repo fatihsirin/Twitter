@@ -3,6 +3,8 @@ import pymongo
 
 class MongoDB(object):
     URI = "mongodb://localhost:27017"
+    #URI = "mongodb+srv://metaning:mqHdE2h5E5hSzC3@cluster0.9ciet.mongodb.net/db"
+
     db = None
     DATABASE = None
 

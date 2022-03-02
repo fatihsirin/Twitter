@@ -9,7 +9,7 @@ db = db.MongoDB(db="Tweettioc")
 
 
 def deleteDuplicatedTweets(since=datetime.date(2000, 1, 1), until=datetime.datetime.now()):
-    logger.debug('deleteDuplicatedTweets is started')
+    logger.info('deleteDuplicatedTweets is started')
     since = datetime.datetime.strptime(since, "%Y-%m-%d")
     until = datetime.datetime.strptime(until, "%Y-%m-%d")
 
@@ -38,8 +38,8 @@ def deleteDuplicatedTweets(since=datetime.date(2000, 1, 1), until=datetime.datet
 
     delete_query = {"_id": {"$in": response}}
     db.delete_many(collection="tweets", query=delete_query)
-    logger.debug("Deleted Duplicate Tweets Count: " + str(len(response)))
-    logger.debug('DeleteDuplicatedTweets is done')
+    logger.info("Deleted Duplicate Tweets Count: " + str(len(response)))
+    logger.info('DeleteDuplicatedTweets is done')
 
 
 # def dashboard_monthly():
@@ -227,16 +227,142 @@ def dashboard_ioctype_daily(days=30):
             {
                 "$match": {name: {"$regex": ".+"}},
             },
-            {"$unwind": "$"+name},
+            {"$unwind": "$" + name},
             {"$group": {"_id": 0, "count": {"$sum": 1}}}
         ]
 
         cursor = list(db.aggregate(collection="tweets", query=query))
         totalcount = list(db.aggregate(collection="tweets", query=query_totalcount))
         totalcount = totalcount[0]["count"]
-        data = {"type": name, "data": cursor, "totalcount":totalcount, "date": datetime.datetime.now()}
+        data = {"type": name, "data": cursor, "totalcount": totalcount, "date": datetime.datetime.now()}
         db.insert(collection="dashboards", data=data)
 
+
+def dashboard_researcher_month():
+    date = datetime.datetime.now()
+    query = [
+        {"$group": {
+            "_id": {"username": "$username",
+                    "month": {"$month": {"$toDate": "$date"}},
+                    "year": {"$year": {"$toDate": "$date"}},
+                    },
+            "count": {"$sum": 1}
+        }
+        },
+        {"$lookup":
+            {
+                "from": "twitterprofiles",
+                "localField": "_id.username",
+                "foreignField": "username",
+                "as": "user"
+            }
+        },
+        {"$unwind": "$user"},
+        {"$project": {
+            "_id": 0,
+            "count": 1,
+            "photo": "$user.photo",
+            "username": "$_id.username",
+            "month": "$_id.month",
+            "year": "$_id.year",
+        }},
+
+        {"$match": {
+            "$and": [{"month": date.month}, {"year": date.year}]}
+        },
+        {"$sort": {"count": -1}},
+    ]
+
+    cursor = list(db.aggregate(collection="tweets", query=query))
+    data = {"type": "researchersMonthly", "data": cursor, "date": datetime.datetime.now()}
+    db.insert(collection="dashboards", data=data)
+
+
+def dashboard_researcher_daily(days=1):
+    since = (datetime.datetime.now() - datetime.timedelta(days=days))
+    date = datetime.datetime.now()
+    query = [
+        {
+            "$match": {"date": {"$gte": since}}
+        },
+        {"$group": {
+            "_id": {"username": "$username",
+                    "month": {"$month": {"$toDate": "$date"}},
+                    "year": {"$year": {"$toDate": "$date"}},
+                    "day": {"$dayOfMonth": {"$toDate": "$date"}},
+                    },
+            "count": {"$sum": 1}
+        }
+        },
+        {"$lookup":
+            {
+                "from": "twitterprofiles",
+                "localField": "_id.username",
+                "foreignField": "username",
+                "as": "user"
+            }
+        },
+        {"$unwind": "$user"},
+        {"$project": {
+            "_id": 0,
+            "count": 1,
+            "photo": "$user.photo",
+            "username": "$_id.username",
+            "month": "$_id.month",
+            "year": "$_id.year",
+            "day": "$_id.day",
+        }},
+
+        {"$match": {
+            "$and": [{"day": date.day}, {"month": date.month}, {"year": date.year}]}
+        },
+        {"$sort": {"count": -1}},
+    ]
+
+    cursor = list(db.aggregate(collection="tweets", query=query))
+    data = {"type": "researchersDaily", "data": cursor, "date": datetime.datetime.now()}
+    db.insert(collection="dashboards", data=data)
+
+
+def dashboard_researcher_yearly():
+    date = datetime.datetime.now()
+    query = [
+        {"$group": {
+            "_id": {"username": "$username",
+                    "year": {"$year": {"$toDate": "$date"}},
+                    },
+            "count": {"$sum": 1}
+        }
+        },
+        {"$lookup":
+            {
+                "from": "twitterprofiles",
+                "localField": "_id.username",
+                "foreignField": "username",
+                "as": "user"
+            }
+        },
+        {"$unwind": "$user"},
+        {"$project": {
+            "_id": 0,
+            "count": 1,
+            "photo": "$user.photo",
+            "username": "$_id.username",
+            "year": "$_id.year",
+        }},
+
+        {"$match": {"year": date.year}},
+        {"$sort": {"count": -1}},
+    ]
+
+    cursor = list(db.aggregate(collection="tweets", query=query))
+    data = {"type": "researchersYearly", "data": cursor, "date": datetime.datetime.now()}
+    db.insert(collection="dashboards", data=data)
+
+
+dashboard_researcher_yearly()
+dashboard_researcher_month()
+dashboard_researcher_daily()
 #
 # deleteDuplicatedTweets(since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
 #                        until = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime('%Y-%m-%d'))

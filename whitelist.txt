@@ -551,3 +551,4 @@
 (.*(\.|/)|^)mybroadband.co.za
 (.*(\.|/)|^)theguardian.com
 (.*(\.|/)|^)foxnews.com
+(.*(\.|/)|^)spotify.com

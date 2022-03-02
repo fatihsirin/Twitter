@@ -86,7 +86,6 @@ Max_Mal_
 PhishStats
 GootLoaderSites
 vinopaljiri
-ecarlesi
 IntezerLabs
 malwrhunterteam
 kubotaa3
@@ -138,7 +137,17 @@ dnstwist
 pr0xylife
 fr0s7_
 3xp0rtblog
+LNadav
+osipov_ar
+ScarletSharkSec
+phage_nz
+HeavyDutyCyber
+nokae8
+stoerchl
+SBousseaden
+Dh4nunjaya
 sisoma2
 DTCERT
 HeliosCert
 drb_ra
+AP_Zenmashi

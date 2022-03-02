@@ -88,7 +88,8 @@ def scrape(since, until=None, words=None, to_account=None, from_account=None, me
                                                       )
             temp_until = datetime.datetime.strptime(temp_until, "%Y-%m-%d")
             temp_since = datetime.datetime.strptime(temp_since, "%Y-%m-%d")
-            last_tweet_date = datetime.datetime.strptime(last_tweet_date, "%Y-%m-%d")
+            if last_tweet_date:
+                last_tweet_date = datetime.datetime.strptime(last_tweet_date, "%Y-%m-%d")
             _diff = temp_until - last_tweet_date
             _diff_since = temp_since - last_tweet_date
 

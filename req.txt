@@ -1,0 +1,7 @@
+python-dotenv
+selenium
+tweepy
+chromedriver-autoinstaller
+pymongo
+dnspython
+schedule

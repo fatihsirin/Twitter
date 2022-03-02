@@ -31,7 +31,7 @@ def parser_photo(driver,user,url=None):
         print(photo)
 
         data = {"username": user, "photo": photo, "date": datetime.datetime.now()}
-        db.insert(collection="profiles", data=data)
+        db.insert(collection="researcher", data=data)
         sleep(1)
     except InvalidSessionIdException:
         driver = init_driver()
@@ -40,12 +40,12 @@ def parser_photo(driver,user,url=None):
         #parser_photo(driver=driver,user=user,url="https://twitter.com/Twitter/photo")
         data = {"username": user, "photo": "https://pbs.twimg.com/profile_images/1354479643882004483/Btnfm47p_400x400.jpg",
                 "date": datetime.datetime.now()}
-        db.insert(collection="profiles", data=data)
+        db.insert(collection="researcher", data=data)
 
 def get_user_profile_photo():
     driver = init_driver()
     users = list(db.distinct(collection="tweets",query="username"))
-    saved_users = list(db.distinct(collection="profiles",query="username"))
+    saved_users = list(db.distinct(collection="researcher",query="username"))
     users_missing = list(set(users) - set(saved_users))
     for user in users_missing:
         parser_photo(driver=driver,user=user)
