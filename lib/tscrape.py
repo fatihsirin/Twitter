@@ -13,7 +13,7 @@ from lib.logger import init_log
 logger = init_log()
 
 
-def scrape(since, until=None, words=None, to_account=None, from_account=None, mention_account=None, interval=5,
+def scrape_user(since, until=None, words=None, to_account=None, from_account=None, mention_account=None, interval=5,
            lang=None,
            headless=True, limit=float("inf"), proxy=None, hashtag=None,
            show_images=False, save_images=False):
@@ -71,15 +71,38 @@ def scrape(since, until=None, words=None, to_account=None, from_account=None, me
                     else:
                         keep = False
                         logger.info("Scrolling is Disabled ")
+    # close the web driver
+    #driver.close()
+    return True
 
 
+def scrape_word(since, until=None, words=None, to_account=None, from_account=None, mention_account=None, interval=5,
+           lang=None,
+           headless=True, limit=float("inf"), proxy=None, hashtag=None,
+           show_images=False, save_images=False):
+    # until = (datetime.datetime.now()).strftime('%Y-%m-%d')
+    # until = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+    #
+    # since = (datetime.datetime.now() - datetime.timedelta(days=380)).strftime('%Y-%m-%d')
+    if until is None:
+        until = (datetime.datetime.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    # set refresh at 0. we refresh the page for each <interval> of time.
+    # until = "2020-10-17"
+    # until = "2021-11-08"
+    # since = "2021-01-01"
 
+    # initiate the driver
+    driver = init_driver(headless, proxy, show_images)
+    logger.info("Selenium is started")
+    if type(since) != str:
+        since = datetime.datetime.strftime(since, '%Y-%m-%d')
 
-
+    logger.info("Scraping by Words is Started")
+    temp_until = until
+    temp_since = since
     keep = True
     while keep:
-        temp_until = until
-        temp_since = since
+
         if words:
             result, last_tweet_date = get_search_data(driver=driver, words=words, since=temp_since, until=temp_until,
                                                       to_account=to_account,
@@ -90,20 +113,28 @@ def scrape(since, until=None, words=None, to_account=None, from_account=None, me
             temp_since = datetime.datetime.strptime(temp_since, "%Y-%m-%d")
             if last_tweet_date:
                 last_tweet_date = datetime.datetime.strptime(last_tweet_date, "%Y-%m-%d")
-            _diff = temp_until - last_tweet_date
-            _diff_since = temp_since - last_tweet_date
-
-            if temp_since == last_tweet_date:
-                keep = False
-                logger.info("Scrolling is Disabled ")
+                _diff = temp_until - last_tweet_date
+                _diff_since = temp_since - last_tweet_date
+                if temp_since == last_tweet_date:
+                    keep = False
+                    logger.info("Scrolling is Disabled ")
+                else:
+                    temp_until = (last_tweet_date - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                    temp_since = datetime.datetime.strftime(temp_since, '%Y-%m-%d')
+                    print("New Until Time: " + temp_until)
+                    logger.info("New Until Time: " + temp_until)
             else:
-                temp_until = (last_tweet_date - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-                temp_since = datetime.datetime.strftime(temp_since, '%Y-%m-%d')
-                print("New Until Time: " + temp_until)
-                logger.info("New Until Time: " + temp_until)
+                if temp_until != temp_since:
+                    temp_until = (temp_until - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                    temp_since = datetime.datetime.strftime(temp_since, '%Y-%m-%d')
+                    print("New Until Time: " + temp_until)
+                    logger.info("New Until Time: " + temp_until)
+                else:
+                    keep = False
+                    logger.info("Scrolling is Disabled ")
 
     # close the web driver
-    driver.close()
+    #driver.close()
     return True
 
 

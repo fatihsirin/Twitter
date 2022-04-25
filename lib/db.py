@@ -3,8 +3,6 @@ import pymongo
 
 class MongoDB(object):
     URI = "mongodb://localhost:27017"
-    #URI = "mongodb+srv://metaning:mqHdE2h5E5hSzC3@cluster0.9ciet.mongodb.net/db"
-
     db = None
     DATABASE = None
 
@@ -41,6 +39,10 @@ class MongoDB(object):
     @staticmethod
     def delete_many(collection, query):
         return MongoDB.DATABASE[collection].delete_many(query)
+
+    @staticmethod
+    def delete_one(collection, query):
+        return MongoDB.DATABASE[collection].delete_one(query)
 
     @staticmethod
     def distinct(collection, query):

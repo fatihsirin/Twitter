@@ -1,3 +1,4 @@
+AP_Zenmashi
 ShadowChasing1
 TeamDreier
 andsyn1
@@ -12,6 +13,7 @@ VK_Intel
 pollo290987
 nao_sec
 executemalware
+s1ckb017
 ps66uk
 dvk01uk
 P3pperP0tts
@@ -97,7 +99,6 @@ migueljmnez
 honeymoon_ioc
 phishgalore
 TheDFIRReport
-Certego_Intel
 MalwarePatrol
 pingineer_jp
 petrovic082
@@ -142,6 +143,7 @@ osipov_ar
 ScarletSharkSec
 phage_nz
 HeavyDutyCyber
+tolisec
 nokae8
 stoerchl
 SBousseaden
@@ -151,3 +153,13 @@ DTCERT
 HeliosCert
 drb_ra
 AP_Zenmashi
+th3_protoCOL
+t3ft3lb
+rythensec
+apivoid
+teamcymru_S2
+b3ard3dav3ng3r
+_re_fox
+blackorbird
+__0XYC__
+martinkklyvo

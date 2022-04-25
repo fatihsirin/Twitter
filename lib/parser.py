@@ -3,6 +3,9 @@ import ipaddress
 import os
 from lib.domain import Domain
 
+wl_mail = open(os.getcwd() + "/mail.txt", 'r')
+wl_mail = wl_mail.readlines()
+
 wl_ip = []
 wl_dom = []
 path_whitelist = os.getcwd() + "/whitelist.txt"
@@ -141,7 +144,14 @@ def extractIoC(data, pattern):
   _tmp = ioc_result['mail'][:]
   for name in _tmp:
     valid = Domain(name.split('@')[1]).valid
+    if name in wl_mail:
+      valid = False
     if not valid:
       ioc_result['mail'].remove(name)
+
+#wl_mail
+
+
+
 
   return ioc_result

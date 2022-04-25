@@ -1,10 +1,16 @@
 from lib.utils import *
-
-
 import re
 from lib.db import MongoDB
+import ipaddress
+import pymongo
+import os
 
 db = MongoDB(db="Tweettioc")
+
+connection = pymongo.MongoClient("mongodb://localhost:27017/")
+mydb = connection["Tweettioc"]
+ioc = mydb["tweets"]
+
 
 def loadWhitelist(filename):
   wl_file = open(filename, 'r')
@@ -30,15 +36,7 @@ def loadWhitelist(filename):
 def start():
     count = 0
     wl_ip, wl_dom = loadWhitelist("whitelist.txt")
-    domain_data = db.aggregate(collection="tweets", query=[{
-            "$match": {"domain": {"$regex": ".+"}}
-        },
-        {"$project": {
-            "_id": 1,
-            "domain": 1,
-        }},
-        ])
-    for x in domain_data:
+    for x in ioc.find({"domain": {"$regex": ".+"}}, {"_id": 1, "domain": 1, "mail": 1, "ip": 1}):
         domains = x['domain'][:]
         changing = 0
         for dom in x['domain']:
@@ -54,31 +52,37 @@ def start():
             newvalues = {"$set": {"domain": domains, "url": []}}
             #ioc.update_one(myquery, newvalues)
 
-    #
-    # for x in ioc.find({"ip": {"$regex": ".+"}}, {"_id": 1, "ip": 1}):
-    #     ioc_ip = x['ip'][:]
-    #     changing = 0
-    #     for ip in x['ip']:
-    #         for wl in wl_ip:
-    #             if wl.find('/') >= 0:
-    #                 wl_nw = ipaddress.ip_network(wl)
-    #                 if ipaddress.ip_address(ip) in wl_nw and ip in ioc_ip:
-    #                     ioc_ip.remove(ip)
-    #                     changing = 1
-    #                     count += 1
-    #                     print('deleted --> ' + ip)
-    #             else:
-    #                 if ip == wl and ip in ioc_ip:
-    #                     ioc_ip.remove(ip)
-    #                     changing = 1
-    #                     count += 1
-    #                     print('deleted --> ' + ip)
-    #         if changing:
-    #             myquery = {"_id": x['_id']}
-    #             newvalues = {"$set": {"ip": ioc_ip}}
-    #             ioc.update_one(myquery, newvalues)
+        ioc_ip = x['ip'][:]
+        changing = 0
+        for ip in x['ip']:
+            for wl in wl_ip:
+                if wl.find('/') >= 0:
+                    wl_nw = ipaddress.ip_network(wl)
+                    if ipaddress.ip_address(ip) in wl_nw and ip in ioc_ip:
+                        ioc_ip.remove(ip)
+                        changing = 1
+                        count += 1
+                        print('deleted --> ' + ip)
+                else:
+                    if ip == wl and ip in ioc_ip:
+                        ioc_ip.remove(ip)
+                        changing = 1
+                        count += 1
+                        print('deleted --> ' + ip)
+            if changing:
+                myquery = {"_id": x['_id']}
+                newvalues = {"$set": {"ip": ioc_ip}}
+                #ioc.update_one(myquery, newvalues)
 
-    print('deleted count --> ' + str(count))
+        wl_mail = open(os.getcwd() + "/mail.txt", 'r')
+        wl_mail = wl_mail.readlines()
+        changing = 0
+        ioc_mail = x['mail'][:]
+
+
+
+
+
 
 
 start()

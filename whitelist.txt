@@ -552,3 +552,5 @@
 (.*(\.|/)|^)theguardian.com
 (.*(\.|/)|^)foxnews.com
 (.*(\.|/)|^)spotify.com
+(.*(\.|/)|^)colocrossing.com
+(.*(\.|/)|^)quadranet.com

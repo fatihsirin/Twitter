@@ -1,8 +1,7 @@
-from lib.tscrape import scrape
+from lib.tscrape import scrape_word, scrape_user
 from lib.const import *
 from lib.logger import init_log
-from lib.utils import deleteDuplicatedTweets, dashboard_hashtag_all,\
-    dashboard_ioc_count,dashboard_monthly,dashboard_daily,dashboard_hashtag_daily,dashboard_ioctype_daily
+from lib.utils import *
 import schedule
 import time
 import datetime
@@ -55,13 +54,24 @@ from_account = getUserList()
 
 def start():
     #1 day before and 2 days after
-    since = (datetime.datetime.now() - datetime.timedelta(days=5)).strftime('%Y-%m-%d')
+    since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
     until = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime('%Y-%m-%d')
+    #since = "2021-12-31"
+    #until = "2022-04-23"
     logger.info("Scraping is Started")
-    data = scrape(since=since, until=until, words=words, to_account=to_account, from_account=from_account,
-                  mention_account=mention_account,
-                  hashtag=hashtag, interval=interval, lang=lang, headless=headless, limit=limit,
-                  proxy=proxy)
+
+    data = scrape_user(since=since, until=until, to_account=to_account, from_account=from_account,
+                       mention_account=mention_account,
+                       hashtag=hashtag, interval=interval, lang=lang, headless=headless, limit=limit,
+                       proxy=proxy)
+
+    #data = scrape_word(since=since, until=until, words=words, to_account=to_account,
+    #              mention_account=mention_account,
+    #              hashtag=hashtag, interval=interval, lang=lang, headless=headless, limit=limit,
+    #              proxy=proxy)
+
+
+
     deleteDuplicatedTweets(since=since, until=until)
     dashboard_ioc_count()
     dashboard_monthly()
@@ -69,6 +79,9 @@ def start():
     dashboard_hashtag_daily()
     dashboard_hashtag_all()
     dashboard_ioctype_daily()
+    dashboard_researcher_yearly()
+    dashboard_researcher_month()
+    dashboard_researcher_daily()
 
     logger.info("Scraping is Done")
 

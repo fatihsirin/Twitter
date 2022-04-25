@@ -6,10 +6,16 @@ from lib.logger import init_log
 logger = init_log()
 
 db = db.MongoDB(db="Tweettioc")
+exclude_tags = ["phishing", "smbc", "smcc", "楽天市場", "フィッシングサイト", "メルカリ", "threatintel", "scam", "virustotal", "amazon",
+                "三井住友カード", "1", "フィッシング詐欺", "malware", "cyber", "security", "cybersecurity", "infosec", "フィッシングメール",
+                "フィッシング","c2","えきねっと",'駅ネット','jr東日本','三井住友visaカード','アマゾン','モバイルsuica','イオン',
+                "au",'イオンカード','etc利用照会','aeonカード',{'count': 95, 'id': 'エポスカード'},'ジャックスカード']
 
 
 def deleteDuplicatedTweets(since=datetime.date(2000, 1, 1), until=datetime.datetime.now()):
     logger.info('deleteDuplicatedTweets is started')
+    since = "2000-01-01"
+    until = "2022-04-17"
     since = datetime.datetime.strptime(since, "%Y-%m-%d")
     until = datetime.datetime.strptime(until, "%Y-%m-%d")
 
@@ -36,8 +42,15 @@ def deleteDuplicatedTweets(since=datetime.date(2000, 1, 1), until=datetime.datet
         for item in doc["unique_ids"]:
             response.append(item)
 
-    delete_query = {"_id": {"$in": response}}
-    db.delete_many(collection="tweets", query=delete_query)
+    if len(response) < 1000:
+        delete_query = {"_id": {"$in": response}}
+        db.delete_many(collection="tweets", query=delete_query)
+    else:
+        for i in response:
+            delete_query = {"_id": i}
+            db.delete_one(collection="tweets", query=delete_query)
+
+
     logger.info("Deleted Duplicate Tweets Count: " + str(len(response)))
     logger.info('DeleteDuplicatedTweets is done')
 
@@ -165,7 +178,29 @@ def dashboard_hashtag_all():
         {"$limit": 15},
         {"$project": {"count": 1, "_id": 0, "id": {"$trim": {"input": "$_id", "chars": "#"}}}}
     ]
-
+    query = [
+        {
+            "$match": {
+                "hashtags": {"$not": {"$size": 0}}
+            }
+        },
+        {"$unwind": "$hashtags"},
+        {
+            "$group": {
+                "_id": {"$toLower": '$hashtags'},
+                "count": {"$sum": 1}
+            }
+        },
+        {
+            "$match": {
+                "count": {"$gte": 2}
+            }
+        },
+        {"$sort": {"count": -1}},
+        {"$project": {"count": 1, "_id": 0, "id": {"$trim": {"input": "$_id", "chars": "#"}}}},
+        { "$match" : { "id": { "$not": {"$in" : exclude_tags } } } },
+        {"$limit": 15},
+    ]
     cursor = list(db.aggregate(collection="tweets", query=query))
     data = {"type": "hashtagsAll", "data": cursor, "date": datetime.datetime.now()}
     db.insert(collection="dashboards", data=data)
@@ -191,8 +226,9 @@ def dashboard_hashtag_daily(days=20):
         },
 
         {"$sort": {"count": -1}},
+        {"$project": {"count": 1, "_id": 0, "id": {"$trim": {"input": "$_id", "chars": "#"}}}},
+        {"$match": {"id": {"$not": {"$in": exclude_tags}}}},
         {"$limit": 15},
-        {"$project": {"count": 1, "_id": 0, "id": {"$trim": {"input": "$_id", "chars": "#"}}}}
     ]
 
     cursor = list(db.aggregate(collection="tweets", query=query))
@@ -251,7 +287,7 @@ def dashboard_researcher_month():
         },
         {"$lookup":
             {
-                "from": "twitterprofiles",
+                "from": "researcher",
                 "localField": "_id.username",
                 "foreignField": "username",
                 "as": "user"
@@ -296,7 +332,7 @@ def dashboard_researcher_daily(days=1):
         },
         {"$lookup":
             {
-                "from": "twitterprofiles",
+                "from": "researcher",
                 "localField": "_id.username",
                 "foreignField": "username",
                 "as": "user"
@@ -336,7 +372,7 @@ def dashboard_researcher_yearly():
         },
         {"$lookup":
             {
-                "from": "twitterprofiles",
+                "from": "researcher",
                 "localField": "_id.username",
                 "foreignField": "username",
                 "as": "user"
@@ -359,10 +395,11 @@ def dashboard_researcher_yearly():
     data = {"type": "researchersYearly", "data": cursor, "date": datetime.datetime.now()}
     db.insert(collection="dashboards", data=data)
 
-
-dashboard_researcher_yearly()
-dashboard_researcher_month()
-dashboard_researcher_daily()
+dashboard_hashtag_daily()
+#dashboard_researcher_yearly()
+#dashboard_researcher_month()
+#dashboard_researcher_daily()
 #
 # deleteDuplicatedTweets(since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
 #                        until = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime('%Y-%m-%d'))
+#deleteDuplicatedTweets()
