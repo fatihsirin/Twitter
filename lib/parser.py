@@ -5,9 +5,9 @@ from lib.domain import Domain
 
 wl_mail = open(os.getcwd() + "/mail.txt", 'r')
 wl_mail = wl_mail.readlines()
-
 wl_ip = []
 wl_dom = []
+
 path_whitelist = os.getcwd() + "/whitelist.txt"
 if os.path.exists(path_whitelist):
   (wl_ip, wl_dom) = loadWhitelist(path_whitelist)
@@ -145,6 +145,8 @@ def extractIoC(data, pattern):
   for name in _tmp:
     valid = Domain(name.split('@')[1]).valid
     if name in wl_mail:
+      valid = False
+    if name.startswith("abuse") or name.startswith("support") or name.startswith("admin"):
       valid = False
     if not valid:
       ioc_result['mail'].remove(name)
