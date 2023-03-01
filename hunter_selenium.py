@@ -54,10 +54,10 @@ from_account = getUserList()
 
 def start():
     #1 day before and 2 days after
-    since = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+    since = (datetime.datetime.now() - datetime.timedelta(days=10)).strftime('%Y-%m-%d')
     until = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime('%Y-%m-%d')
-    #since = "2021-12-31"
-    #until = "2022-04-23"
+    #since = "2022-12-19"
+    #until = "2022-12-21"
     logger.info("Scraping is Started")
 
     data = scrape_user(since=since, until=until, to_account=to_account, from_account=from_account,
@@ -65,10 +65,10 @@ def start():
                        hashtag=hashtag, interval=interval, lang=lang, headless=headless, limit=limit,
                        proxy=proxy)
 
-    #data = scrape_word(since=since, until=until, words=words, to_account=to_account,
-    #              mention_account=mention_account,
-    #              hashtag=hashtag, interval=interval, lang=lang, headless=headless, limit=limit,
-    #              proxy=proxy)
+    data = scrape_word(since=since, until=until, words=words, to_account=to_account,
+                  mention_account=mention_account,
+                  hashtag=hashtag, interval=interval, lang=lang, headless=headless, limit=limit,
+                  proxy=proxy)
 
 
 
@@ -81,7 +81,7 @@ def start():
     dashboard_ioctype_daily()
     dashboard_researcher_yearly()
     dashboard_researcher_month()
-    dashboard_researcher_daily()
+    #dashboard_researcher_daily()
 
     logger.info("Scraping is Done")
 
