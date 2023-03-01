@@ -7,3 +7,4 @@ tria.ge
 joesandbox.com
 labs.inquest.net
 intezer.com
+bazaar.abuse.ch
