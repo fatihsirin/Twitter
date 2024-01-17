@@ -16,10 +16,10 @@ ioc = mydb["ioc"]
 
 
 def tweepylogin():
-    consumer_key = 'dM6lo6TKjzkY1QHdIFCoxhxGd'
-    consumer_secret = 'TYFvslFiYTNLBt8LgHFERTtPSEKi89IVqlFeYeSswbxFoZMeAm'
-    access_token = '320948193-cjsOagxsgO3aLxzZqeTFO53RUQCcMsez3sX9Qdz4'
-    access_token_secret = 'aAIrUH0lKaPuz96YVcKY9MoYIWkoe4yqz6d6FDmwfMIf4'
+    consumer_key = ''
+    consumer_secret = ''
+    access_token = ''
+    access_token_secret = ''
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     api = tweepy.API(auth,wait_on_rate_limit=True)
